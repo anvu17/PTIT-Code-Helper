@@ -9,7 +9,12 @@
         'pch_hide_ac': false,
         'pch_only_wrong': false,
         'pch_cph_id_format': 'UPPER',
-        'pch_cph_name_format': 'NONE'
+        'pch_cph_name_format': 'NONE',
+        'pch_disable_autosave': false,
+        'pch_autosave_interval': 15,
+        'pch_autosave_on_change': false,
+        'pch_autodelete_time': 24,
+        'pch_autodelete_enabled': true
     };
 
     const COPY_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>`;
@@ -23,23 +28,76 @@
 
     const isProblemPage = () => !!document.querySelector('.submit__des') || !!document.querySelector('.problem-content');
 
-    chrome.storage.sync.get(DEFAULTS, (items) => {
-        if (items.pch_hide_chat) hideChat();
-        if (items.pch_hide_banner) hideBanner();
-        if (items.pch_hide_lectures) hideLectures();
-        filterProblems();
+    chrome.storage.sync.get(DEFAULTS, (syncItems) => {
+        chrome.storage.local.get(['pch_drafts'], (localItems) => {
+            const items = { ...syncItems };
+            const drafts = localItems.pch_drafts || {};
 
-        if (isProblemPage()) {
-            setTimeout(() => {
-                window.dispatchEvent(new CustomEvent("PCH_CONFIG", { detail: items }));
-            }, 500);
-        }
+            if (items.pch_hide_chat) hideChat();
+            if (items.pch_hide_banner) hideBanner();
+            if (items.pch_hide_lectures) hideLectures();
+            filterProblems();
 
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', init);
-        } else {
-            init();
-        }
+            if (items.pch_autodelete_enabled) {
+                const HOURS = items.pch_autodelete_time || 24;
+                const EXPIRATION = HOURS * 60 * 60 * 1000;
+                const now = Date.now();
+                let changed = false;
+
+                Object.keys(drafts).forEach(key => {
+                    if (now - drafts[key].timestamp > EXPIRATION) {
+                        delete drafts[key];
+                        changed = true;
+                    }
+                });
+
+                if (changed) chrome.storage.local.set({ pch_drafts: drafts });
+            }
+
+            if (isProblemPage()) {
+                const problemId = location.pathname.split('/').pop().toUpperCase();
+                items.draftContent = drafts[problemId]?.content || "";
+
+                setTimeout(() => {
+                    window.dispatchEvent(new CustomEvent("PCH_CONFIG", { detail: items }));
+                }, 500);
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+        });
+    });
+
+    window.addEventListener('PCH_SAVE_DRAFT', (e) => {
+        const { problemId, content } = e.detail;
+        if (!problemId || !content) return;
+
+        chrome.storage.local.get(['pch_drafts'], (result) => {
+            chrome.storage.sync.get(['pch_autodelete_time', 'pch_autodelete_enabled'], (settings) => {
+                const drafts = result.pch_drafts || {};
+                drafts[problemId] = {
+                    content: content,
+                    timestamp: Date.now()
+                };
+
+                if (settings.pch_autodelete_enabled !== false) {
+                    const HOURS = settings.pch_autodelete_time || 24;
+                    const EXPIRATION = HOURS * 60 * 60 * 1000;
+                    const now = Date.now();
+
+                    Object.keys(drafts).forEach(key => {
+                        if (now - drafts[key].timestamp > EXPIRATION) {
+                            delete drafts[key];
+                        }
+                    });
+                }
+
+                chrome.storage.local.set({ pch_drafts: drafts });
+            });
+        });
     });
 
     chrome.storage.onChanged.addListener((changes, namespace) => {
@@ -53,9 +111,8 @@
     function init() {
         injectPermanentCopyButtons();
         injectTitleButtons();
+        checkUpdate();
     }
-
-
 
     window.addEventListener("PCH_REQ_CLIPBOARD", () => {
         navigator.clipboard.readText()
@@ -409,7 +466,6 @@
                 formattedName = words.map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join('');
             } else if (nameFormat === 'SNAKE') {
                 formattedName = words.join('_').toLowerCase();
-
             }
         }
 

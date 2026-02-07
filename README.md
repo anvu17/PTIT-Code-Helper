@@ -6,6 +6,7 @@
 
 ### 📝 Soạn thảo & Nộp bài
 - **Code Editor tích hợp**: Gõ code trực tiếp với Ace Editor ngay trong trang bài tập
+- **Chức năng bản nháp - Tự động lưu** bài đang soạn trên Editor. Cho phép tùy chỉnh chế độ và thời gian lưu.
 - **Kéo-thả tệp** hoặc **Ctrl+C, Ctrl+V** để nhập code
 - **Nộp bài siêu tốc**:
   - **Nộp trực tiếp** từ Editor
@@ -50,6 +51,9 @@
 
 ### Code Editor ngay trong trang bài tập
 ![Code Editor](https://anvu.web.app/pch/imgs/Code-Editor-ngay-trong-trang-bai-tap.png)
+
+### Chức năng tự động lưu
+![Tự động lưu](https://anvu.web.app/pch/imgs/Chuc-nang-tu-dong-luu.png)
 
 ### Kéo-thả tệp vào trang bài tập
 ![Kéo-thả](https://anvu.web.app/pch/imgs/Keo-tha-tep-vao-trang-bai-tap.png)

@@ -1,7 +1,7 @@
 {
     "manifest_version": 3,
     "name": "PTIT Code Helper",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "description": "Tiện ích hỗ trợ PTIT Code: Code Editor, Nộp bài nhanh, Sao chép và tải bài tập, Nhập vào CPH,...",
     "author": "An Vũ",
     "permissions": [
@@ -20,6 +20,7 @@
     "action": {
         "default_popup": "popup.html"
     },
+    "options_page": "autosave_options.html",
     "content_scripts": [
         {
             "matches": [

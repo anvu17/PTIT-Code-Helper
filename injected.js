@@ -4,7 +4,9 @@
     const ICONS = {
         code: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>`,
         paste: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>`,
-        upload: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>`
+        upload: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>`,
+        trash: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2-2v2"></path></svg>`,
+        save: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v13a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>`
     };
 
     window.addEventListener("PCH_CONFIG", (e) => {
@@ -26,6 +28,9 @@
 
             this.langSelect = null;
             this.dragOverlay = null;
+            this.saveInterval = null;
+            this.problemId = location.pathname.split('/').pop().toUpperCase();
+            this.lastSavedContent = this.settings.draftContent || '';
             this.tryInit();
             this.setupGlobalPasteListener();
             this.setupGlobalDragListener();
@@ -77,6 +82,7 @@
 
             this.initAce();
             setTimeout(() => this.createDragOverlay(), 100);
+            this.setupAutoSave();
         }
 
         setupGlobalPasteListener() {
@@ -193,6 +199,36 @@
             }
             toolbar.appendChild(this.langSelect);
 
+            if (!this.settings.pch_disable_autosave) {
+                const saveBtn = document.createElement('button');
+                saveBtn.className = 'pch-btn';
+                saveBtn.innerHTML = `${ICONS.save} Lưu nháp`;
+                saveBtn.onclick = () => {
+                    const content = this.aceEditor.getValue();
+                    if (!content.trim()) return alert("Code trống!");
+
+                    window.dispatchEvent(new CustomEvent("PCH_SAVE_DRAFT", {
+                        detail: {
+                            problemId: this.problemId,
+                            content: content
+                        }
+                    }));
+
+                    const original = saveBtn.innerHTML;
+                    saveBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="#28a745" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Đã lưu`;
+                    setTimeout(() => saveBtn.innerHTML = original, 1500);
+                };
+                toolbar.appendChild(saveBtn);
+            }
+
+            const clearBtn = document.createElement('button');
+            clearBtn.className = 'pch-btn';
+            clearBtn.innerHTML = `${ICONS.trash} Xóa tất cả`;
+            clearBtn.onclick = () => {
+                this.aceEditor.setValue('');
+            };
+            toolbar.appendChild(clearBtn);
+
             const quickBtn = document.createElement('button');
             quickBtn.className = 'pch-btn';
             quickBtn.innerHTML = `${ICONS.paste} Nộp code từ bộ nhớ tạm`;
@@ -206,6 +242,8 @@
                     });
             };
             toolbar.appendChild(quickBtn);
+
+
 
             const submitBtn = document.createElement('button');
             submitBtn.className = 'pch-btn pch-btn-red';
@@ -242,6 +280,39 @@
             else if (text.includes("Golang")) mode = "golang";
             else if (text.includes("C#")) mode = "csharp";
             this.aceEditor.session.setMode("ace/mode/" + mode);
+        }
+
+        setupAutoSave() {
+            if (this.settings.pch_disable_autosave) return;
+
+            if (this.settings.draftContent && this.aceEditor.getValue().trim() === '') {
+                this.aceEditor.setValue(this.settings.draftContent, -1);
+            }
+
+            const save = () => {
+                const content = this.aceEditor.getValue();
+                if (!content.trim()) return;
+                if (content === this.lastSavedContent) return;
+
+                this.lastSavedContent = content;
+                window.dispatchEvent(new CustomEvent("PCH_SAVE_DRAFT", {
+                    detail: {
+                        problemId: this.problemId,
+                        content: content
+                    }
+                }));
+            };
+
+            if (this.settings.pch_autosave_on_change) {
+                let timeout;
+                this.aceEditor.session.on('change', () => {
+                    clearTimeout(timeout);
+                    timeout = setTimeout(save, 1000);
+                });
+            } else {
+                const interval = (this.settings.pch_autosave_interval || 15) * 1000;
+                this.saveInterval = setInterval(save, interval);
+            }
         }
 
         submitCode(code) {

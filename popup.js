@@ -47,6 +47,11 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('pch_cph_id_format').onchange = (e) => save('pch_cph_id_format', e.target.value);
     document.getElementById('pch_cph_name_format').onchange = (e) => save('pch_cph_name_format', e.target.value);
 
+    document.getElementById('open_options').onclick = (e) => {
+        e.preventDefault();
+        chrome.runtime.openOptionsPage();
+    };
+
     checkForUpdate('pch_dismissed_version', (remote) => {
         const banner = document.getElementById('update_banner');
         document.getElementById('update_version').textContent = 'v' + remote.version;
