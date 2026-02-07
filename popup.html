@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>PTIT Code Helper</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            border: none !important;
+            outline: none !important;
+            margin: 0;
+            padding: 0;
+            width: 400px;
+            background: #f8f9fa;
+            overflow: hidden;
+        }
+
+        body {
+            width: 400px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #f8f9fa;
+            margin: 0;
+            padding: 0;
+        }
+
+        .header {
+            background: #b71c1c;
+            color: white;
+            padding: 12px 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .content {
+            padding: 12px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 10px 12px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .row:last-child {
+            margin-bottom: 0;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 36px;
+            height: 20px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 20px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked+.slider {
+            background-color: #b71c1c;
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(16px);
+        }
+
+        select {
+            border: 1px solid #ddd;
+            padding: 4px;
+            border-radius: 4px;
+            width: 100%;
+            margin-top: 5px;
+        }
+
+        .info {
+            font-size: 11px;
+            color: #888;
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .footer-links {
+            margin-top: 6px;
+            font-size: 10px;
+        }
+
+        .footer-links a {
+            color: #b71c1c;
+            text-decoration: none;
+            transition: opacity 0.2s;
+        }
+
+        .footer-links a:hover {
+            opacity: 0.7;
+            text-decoration: underline;
+        }
+
+        .footer-links .separator {
+            margin: 0 6px;
+            color: #ccc;
+        }
+
+        .update-banner {
+            background: linear-gradient(135deg, #b71c1c 0%, #d32f2f 100%);
+            color: white;
+            padding: 12px;
+            margin-bottom: 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            display: none;
+            box-shadow: 0 4px 6px rgba(183, 28, 28, 0.2);
+        }
+
+        .update-banner.show {
+            display: block;
+        }
+
+        .update-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .update-title {
+            font-weight: 700;
+            font-size: 13px;
+        }
+
+        .update-date {
+            font-size: 11px;
+            opacity: 0.9;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .update-content {
+            margin-bottom: 8px;
+            line-height: 1.4;
+            opacity: 0.95;
+        }
+
+        .update-btn {
+            display: inline-block;
+            background: white;
+            color: #b71c1c;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 12px;
+            padding: 6px 14px;
+            border-radius: 4px;
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+
+        .update-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .update-close {
+            cursor: pointer;
+            font-size: 20px;
+            line-height: 1;
+            color: rgba(255, 255, 255, 0.8);
+            transition: color 0.2s;
+            font-weight: 300;
+        }
+
+        .update-close:hover {
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="16 18 22 12 16 6"></polyline>
+                <polyline points="8 6 2 12 8 18"></polyline>
+            </svg>
+            PTIT Code Helper
+        </h1>
+        <span style="font-size:10px; opacity:0.8; font-weight:normal;">v1.0.0</span>
+    </div>
+    <div class="content">
+        <div class="update-banner" id="update_banner">
+            <div class="update-header">
+                <span class="update-title">PTIT Code Helper <span id="update_version"></span></span>
+                <span class="update-close" id="update_close">×</span>
+            </div>
+            <div style="margin-bottom: 8px;">
+                <span class="update-date">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                    <span id="update_date"></span>
+                </span>
+            </div>
+            <div id="update_changelog" class="update-content"></div>
+            <a href="#" id="update_link" target="_blank" class="update-btn">Tải xuống</a>
+        </div>
+        <div class="card">
+            <div style="font-size:11px; font-weight:700; color:#888; margin-bottom:8px; text-transform:uppercase;">Công
+                cụ và Giao diện</div>
+            <div class="row">
+                <label>Code Editor</label>
+                <label class="switch"><input type="checkbox" id="pch_editor_enabled"><span
+                        class="slider"></span></label>
+            </div>
+            <div class="row">
+                <label>Ẩn Chat</label>
+                <label class="switch"><input type="checkbox" id="pch_hide_chat"><span class="slider"></span></label>
+            </div>
+            <div class="row">
+                <label>Ẩn Beta Banner</label>
+                <label class="switch"><input type="checkbox" id="pch_hide_banner"><span class="slider"></span></label>
+            </div>
+            <div class="row">
+                <label>Ẩn Bài giảng</label>
+                <label class="switch"><input type="checkbox" id="pch_hide_lectures"><span class="slider"></span></label>
+            </div>
+        </div>
+
+        <div class="card">
+            <div style="font-size:11px; font-weight:700; color:#888; margin-bottom:8px; text-transform:uppercase;">Bộ
+                lọc</div>
+            <div class="row">
+                <label>Ẩn bài làm đúng</label>
+                <label class="switch"><input type="checkbox" id="pch_hide_ac"><span class="slider"></span></label>
+            </div>
+            <div class="row">
+                <label>Chỉ hiện bài làm sai</label>
+                <label class="switch"><input type="checkbox" id="pch_only_wrong"><span class="slider"></span></label>
+            </div>
+        </div>
+
+        <div class="card">
+            <div style="font-size:11px; font-weight:700; color:#888; margin-bottom:8px; text-transform:uppercase;">Cấu
+                hình tên tệp cho CPH</div>
+            <div class="row" style="display:flex; gap:8px; align-items:center;">
+                <div style="flex:1;">
+                    <label style="font-size:11px; display:block; margin-bottom:4px; color:#666;">Mã bài</label>
+                    <select id="pch_cph_id_format" style="width:100%;">
+                        <option value="NONE">Không</option>
+                        <option value="UPPER">CHELLO</option>
+                        <option value="LOWER">chello</option>
+                    </select>
+                </div>
+                <div style="flex:1;">
+                    <label style="font-size:11px; display:block; margin-bottom:4px; color:#666;">Tên bài</label>
+                    <select id="pch_cph_name_format" style="width:100%;">
+                        <option value="NONE">Không</option>
+                        <option value="UPPER">IN HOA</option>
+                        <option value="LOWER">in thường</option>
+                        <option value="CAMEL">camelCase</option>
+                        <option value="PASCAL">PascalCase</option>
+                        <option value="SNAKE">snake_case</option>
+
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="info">
+            Phát triển bởi <a href="https://anvu.web.app" target="_blank"
+                style="color: inherit; text-decoration: none;"><b>An Vũ</b></a>
+            <div class="footer-links">
+                <a href="https://anvu.web.app/pch" target="_blank">Trang chủ</a>
+                <span class="separator">•</span>
+                <a href="https://github.com/anvu17/PTIT-Code-Helper" target="_blank">GitHub</a>
+                <span class="separator">•</span>
+                <a href="https://anvu.web.app/mi-cay" target="_blank">Ủng hộ</a>
+            </div>
+        </div>
+    </div>
+    <script src="popup.js"></script>
+</body>
+
+</html>
