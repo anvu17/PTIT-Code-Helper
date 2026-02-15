@@ -60,7 +60,7 @@
             if (inject()) return;
             
             let attempts = 0;
-            const maxAttempts = 20; // 10 seconds max
+            const maxAttempts = 20;
             
             const observer = new MutationObserver((mutations, obs) => {
                 attempts++;
@@ -186,9 +186,10 @@
             if (!file || !this.aceEditor) return;
             
             // Validate file size (max 1MB)
-            const MAX_FILE_SIZE = 1024 * 1024; // 1MB
+            const MAX_FILE_SIZE = 1024 * 1024;
+            const MAX_FILE_SIZE_MB = 1;
             if (file.size > MAX_FILE_SIZE) {
-                alert('Tệp quá lớn! Kích thước tối đa là 1MB.');
+                alert(`Tệp quá lớn! Kích thước tối đa là ${MAX_FILE_SIZE_MB}MB.`);
                 return;
             }
             
@@ -356,8 +357,8 @@
         submitCode(code) {
             if (!code || !code.trim()) return alert("Code trống!");
             
-            // Validate code length
-            const MAX_CODE_LENGTH = 100000; // 100KB
+            // Validate code length (max 100,000 characters)
+            const MAX_CODE_LENGTH = 100000;
             if (code.length > MAX_CODE_LENGTH) {
                 alert("Code quá dài! Vui lòng kiểm tra lại.");
                 return;

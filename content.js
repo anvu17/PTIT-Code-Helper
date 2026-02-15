@@ -276,11 +276,14 @@
         // Sanitize filename to prevent directory traversal
         const sanitizedFilename = filename.replace(/[^a-zA-Z0-9._-]/g, '_');
         
+        // Ensure filename is not empty after sanitization
+        const finalFilename = sanitizedFilename || 'download.txt';
+        
         const blob = new Blob([text], { type: 'text/plain' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = sanitizedFilename;
+        a.download = finalFilename;
         a.click();
         URL.revokeObjectURL(url);
     }
