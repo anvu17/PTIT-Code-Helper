@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>PTIT Code Helper - Quản lý bản nháp</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .pch-options-body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+            min-height: 100vh;
+        }
+
+        .pch-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .pch-h2 {
+            margin-top: 0;
+            border-bottom: 2px solid #b71c1c;
+            padding-bottom: 10px;
+            color: #b71c1c;
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        .pch-section {
+            padding-bottom: 10px;
+        }
+
+        .pch-section-border {
+            border-bottom: 1px solid #eee;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+        }
+
+        .pch-section-border:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+            margin-bottom: 0;
+        }
+
+        .pch-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .pch-modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 800px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .pch-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .pch-modal-title {
+            font-weight: bold;
+            font-size: 18px;
+            color: #b71c1c;
+        }
+
+        .pch-modal-close {
+            cursor: pointer;
+            font-size: 24px;
+            color: #888;
+            line-height: 1;
+        }
+
+        .pch-modal-close:hover {
+            color: #333;
+        }
+
+        .pch-modal-body {
+            overflow-y: auto;
+            flex: 1;
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #eee;
+            font-family: monospace;
+            white-space: pre-wrap;
+            font-size: 13px;
+        }
+
+        .pch-modal-footer {
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+            margin-top: 15px;
+            text-align: right;
+        }
+
+        .pch-d-none {
+            display: none !important;
+        }
+
+        #settings_area {
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+        }
+
+        label {
+            font-weight: 500;
+        }
+
+        .draft-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #eee;
+            border-radius: 4px;
+        }
+
+        .draft-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .draft-item:last-child {
+            border-bottom: none;
+        }
+
+        .draft-name {
+            font-weight: 500;
+        }
+
+        .draft-time {
+            color: #888;
+            font-size: 0.9em;
+            margin-right: 18px;
+        }
+
+        .btn-action {
+            cursor: pointer;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+
+<body class="pch-options-body pch-box-sizing">
+    <div class="pch-container">
+        <h2 class="pch-h2">Quản lý chức năng bản nháp</h2>
+
+        <div class="pch-section">
+            <div class="pch-row">
+                <label>Bật chức năng bản nháp</label>
+                <label class="pch-switch">
+                    <input type="checkbox" id="pch_autosave_enabled">
+                    <span class="pch-slider"></span>
+                </label>
+            </div>
+        </div>
+
+        <div id="settings_area">
+            <div class="pch-section pch-section-border">
+                <div class="pch-row">
+                    <label>Chế độ lưu bản nháp</label>
+                    <select id="pch_autosave_mode" class="pch-select" style="width: 220px;">
+                        <option value="interval">Theo thời gian</option>
+                        <option value="on_change">Khi thay đổi nội dung</option>
+                    </select>
+                </div>
+                <div class="pch-row" id="interval_setting">
+                    <label>Lưu bản nháp sau mỗi khoảng (giây)</label>
+                    <input type="number" id="pch_autosave_interval" class="pch-input" style="width: 220px;" min="5"
+                        value="15">
+                </div>
+
+                <div class="pch-row">
+                    <label>Tự động xóa bản nháp cũ</label>
+                    <label class="pch-switch">
+                        <input type="checkbox" id="pch_autodelete_enabled">
+                        <span class="pch-slider"></span>
+                    </label>
+                </div>
+
+                <div class="pch-row" id="autodelete_time_setting">
+                    <label>Tự động xóa sau mỗi khoảng (giờ)</label>
+                    <input type="number" id="pch_autodelete_time" class="pch-input" style="width: 220px;" min="1"
+                        value="24">
+                </div>
+            </div>
+
+            <div class="pch-section pch-section-border">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <label>Danh sách bản nháp</label>
+                    <button id="btn_clear_all" class="pch-btn pch-btn-red">Xóa tất cả</button>
+                </div>
+                <div class="draft-list" id="draft_list">
+                </div>
+            </div>
+        </div>
+
+        <div class="pch-footer">
+            <div>Phát triển bởi<a href="https://anvu.web.app" target="_blank"><b>An Vũ</b></a></div>
+            <div style="margin-top: 5px;">
+                <a href="https://anvu.web.app/pch" target="_blank">Trang chủ</a> &bull;
+                <a href="https://github.com/anvu17/PTIT-Code-Helper" target="_blank">GitHub</a> &bull;
+                <a href="#" id="pch_feedback" target="_blank">Góp ý, báo lỗi</a> &bull;
+                <a href="https://anvu.web.app/mi-cay" target="_blank">Ủng hộ</a>
+            </div>
+        </div>
+    </div>
+
+    <div id="draft_modal" class="pch-modal pch-d-none">
+        <div class="pch-modal-content">
+            <div class="pch-modal-header">
+                <div class="pch-modal-title" id="modal_title">Chi tiết bản nháp</div>
+                <span class="pch-modal-close" id="modal_close">&times;</span>
+            </div>
+            <div class="pch-modal-body" id="modal_body"></div>
+            <div class="pch-modal-footer">
+                <button id="modal_copy_btn" class="pch-btn pch-btn-red">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                    </svg>
+                    Sao chép
+                </button>
+            </div>
+        </div>
+    </div>
+    <script src="pch.js"></script>
+    <script src="analytics.js"></script>
+    <script src="draft_options.js"></script>
+</body>
+
+</html>
