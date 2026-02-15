@@ -40,6 +40,12 @@ class Analytics {
         return sessionData.session_id;
     }
     async fireEvent(name, params = {}) {
+        // Validate event name
+        if (!name || typeof name !== 'string') {
+            console.error('Invalid event name');
+            return;
+        }
+        
         if (!params.session_id) {
             params.session_id = await this.getOrCreateSessionId();
         }
@@ -49,10 +55,11 @@ class Analytics {
         try {
             params.app_version = chrome.runtime.getManifest().version;
         } catch (e) {
+            console.error('Failed to get app version:', e);
         }
         try {
-            await fetch(
-                `${GA_ENDPOINT}?measurement_id=${MEASUREMENT_ID}&api_secret=${API_SECRET}`,
+            const response = await fetch(
+                `${this.debug ? GA_DEBUG_ENDPOINT : GA_ENDPOINT}?measurement_id=${MEASUREMENT_ID}&api_secret=${API_SECRET}`,
                 {
                     method: 'POST',
                     body: JSON.stringify({
@@ -66,7 +73,11 @@ class Analytics {
                     })
                 }
             );
+            if (!response.ok) {
+                console.error('Analytics request failed:', response.status);
+            }
         } catch (e) {
+            console.error('Analytics error:', e);
         }
     }
     async fireErrorEvent(error, additionalParams = {}) {

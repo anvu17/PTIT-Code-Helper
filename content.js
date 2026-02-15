@@ -102,7 +102,10 @@
             .then(text => {
                 window.dispatchEvent(new CustomEvent("PCH_PASTE_DATA", { detail: text }));
             })
-            .catch(err => alert("Không thể đọc bộ nhớ đệm!"));
+            .catch(err => {
+                console.error("Clipboard read error:", err);
+                alert("Không thể đọc bộ nhớ đệm!");
+            });
     });
     const Analytics = self.Analytics;
     const observer = new PerformanceObserver((list) => {
@@ -212,18 +215,28 @@
         copyBtn.title = "Sao chép bài tập";
         copyBtn.innerHTML = PCH_ICONS.copy;
         copyBtn.onclick = () => {
-            navigator.clipboard.writeText(generateProblemText());
-            showFeedback(copyBtn);
+            try {
+                navigator.clipboard.writeText(generateProblemText());
+                showFeedback(copyBtn);
+            } catch (err) {
+                console.error("Copy error:", err);
+                alert("Không thể sao chép!");
+            }
         };
         const dlBtn = document.createElement('span');
         dlBtn.className = 'pch-icon-btn';
         dlBtn.title = "Tải bài tập (.txt)";
         dlBtn.innerHTML = PCH_ICONS.download;
         dlBtn.onclick = () => {
-            const text = generateProblemText();
-            const info = getProblemInfo({ idFormat: 'UPPER', nameFormat: 'NONE' });
-            downloadString(text, `${info.code}.txt`);
-            showFeedback(dlBtn);
+            try {
+                const text = generateProblemText();
+                const info = getProblemInfo({ idFormat: 'UPPER', nameFormat: 'NONE' });
+                downloadString(text, `${info.code}.txt`);
+                showFeedback(dlBtn);
+            } catch (err) {
+                console.error("Download error:", err);
+                alert("Không thể tải về!");
+            }
         };
         const cphBtn = document.createElement('span');
         cphBtn.className = 'pch-icon-btn';
@@ -260,11 +273,14 @@
         parent.appendChild(container);
     }
     function downloadString(text, filename) {
+        // Sanitize filename to prevent directory traversal
+        const sanitizedFilename = filename.replace(/[^a-zA-Z0-9._-]/g, '_');
+        
         const blob = new Blob([text], { type: 'text/plain' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = filename;
+        a.download = sanitizedFilename;
         a.click();
         URL.revokeObjectURL(url);
     }
@@ -437,28 +453,28 @@
     function sendToCPH() {
         return new Promise((resolve) => {
             SYNC.get(['pch_cph_id_format', 'pch_cph_name_format'], async (items) => {
-                const config = {
-                    idFormat: items.pch_cph_id_format || 'UPPER',
-                    nameFormat: items.pch_cph_name_format || 'NONE'
-                };
-                const info = getProblemInfo(config);
-                const tests = getTests();
-                if (!tests.length) {
-                    alert('Không tìm thấy test case!');
-                    resolve(false);
-                    return;
-                }
-                const data = {
-                    ...CPH_CONFIG,
-                    name: info.name,
-                    url: info.url,
-                    tests: tests,
-                    languages: {
-                        ...CPH_CONFIG.languages,
-                        java: { ...CPH_CONFIG.languages.java, taskClass: info.name }
-                    }
-                };
                 try {
+                    const config = {
+                        idFormat: items.pch_cph_id_format || 'UPPER',
+                        nameFormat: items.pch_cph_name_format || 'NONE'
+                    };
+                    const info = getProblemInfo(config);
+                    const tests = getTests();
+                    if (!tests.length) {
+                        alert('Không tìm thấy test case!');
+                        resolve(false);
+                        return;
+                    }
+                    const data = {
+                        ...CPH_CONFIG,
+                        name: info.name,
+                        url: info.url,
+                        tests: tests,
+                        languages: {
+                            ...CPH_CONFIG.languages,
+                            java: { ...CPH_CONFIG.languages.java, taskClass: info.name }
+                        }
+                    };
                     const res = await chrome.runtime.sendMessage({
                         action: "sendToCPH",
                         data: data
@@ -470,6 +486,8 @@
                         resolve(true);
                     }
                 } catch (e) {
+                    console.error("CPH error:", e);
+                    alert("Lỗi khi gửi đến CPH!");
                     resolve(false);
                 }
             });

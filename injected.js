@@ -31,6 +31,21 @@
             this.tryInit();
             this.setupGlobalPasteListener();
             this.setupGlobalDragListener();
+            this.setupCleanup();
+        }
+        
+        setupCleanup() {
+            // Cleanup resources when navigating away
+            window.addEventListener('beforeunload', () => {
+                if (this.saveInterval) {
+                    clearInterval(this.saveInterval);
+                    this.saveInterval = null;
+                }
+                if (this.aceEditor) {
+                    this.aceEditor.destroy();
+                    this.aceEditor = null;
+                }
+            });
         }
         tryInit() {
             if (document.querySelector('.pch-helper-box')) return;
@@ -43,8 +58,16 @@
                 return false;
             };
             if (inject()) return;
+            
+            let attempts = 0;
+            const maxAttempts = 20; // 10 seconds max
+            
             const observer = new MutationObserver((mutations, obs) => {
+                attempts++;
                 if (inject()) {
+                    obs.disconnect();
+                } else if (attempts >= maxAttempts) {
+                    console.warn('PCH Editor: Failed to initialize after maximum attempts');
                     obs.disconnect();
                 }
             });
@@ -155,15 +178,38 @@
                 const files = e.dataTransfer?.files;
                 if (files && files.length > 0) {
                     this.handleFileSelect(files[0]);
-                    this.handleFileSelect(files[0]);
                 }
             });
             document.body.appendChild(this.dragOverlay);
         }
         handleFileSelect(file) {
             if (!file || !this.aceEditor) return;
+            
+            // Validate file size (max 1MB)
+            const MAX_FILE_SIZE = 1024 * 1024; // 1MB
+            if (file.size > MAX_FILE_SIZE) {
+                alert('Tệp quá lớn! Kích thước tối đa là 1MB.');
+                return;
+            }
+            
+            // Validate file type
+            const allowedExtensions = ['.cpp', '.c', '.java', '.py', '.go', '.cs', '.txt'];
+            const fileName = file.name.toLowerCase();
+            const isValidExtension = allowedExtensions.some(ext => fileName.endsWith(ext));
+            
+            if (!isValidExtension) {
+                alert('Định dạng tệp không được hỗ trợ!');
+                return;
+            }
+            
             const reader = new FileReader();
-            reader.onload = (e) => this.aceEditor.setValue(e.target.result, -1);
+            reader.onload = (e) => {
+                try {
+                    this.aceEditor.setValue(e.target.result, -1);
+                } catch (error) {
+                    alert('Lỗi khi đọc nội dung tệp!');
+                }
+            };
             reader.onerror = () => alert('Không thể đọc tệp!');
             reader.readAsText(file);
         }
@@ -225,7 +271,6 @@
                 navigator.clipboard.readText()
                     .then(text => {
                         this.submitCode(text);
-                        this.submitCode(text);
                     })
                     .catch(() => {
                         window.dispatchEvent(new CustomEvent("PCH_REQ_CLIPBOARD"));
@@ -246,11 +291,18 @@
         }
         initAce() {
             try {
+                if (!window.ace) {
+                    console.error('Ace Editor not loaded');
+                    return;
+                }
+                
                 this.aceEditor = ace.edit("pch-ace-editor");
                 this.aceEditor.setTheme("ace/theme/textmate");
                 this.aceEditor.setFontSize(14);
                 this.aceEditor.setShowPrintMargin(false);
+                
                 if (this.langSelect) this.updateAceMode();
+                
                 if (this.saveBtn) {
                     this.aceEditor.session.on('change', () => {
                         if (this.saveBtn.innerHTML.includes('Đã lưu')) {
@@ -258,7 +310,10 @@
                         }
                     });
                 }
-            } catch (e) { }
+            } catch (e) {
+                console.error('Failed to initialize Ace Editor:', e);
+                alert('Không thể khởi tạo Code Editor!');
+            }
         }
         updateAceMode() {
             if (!this.aceEditor || !this.langSelect) return;
@@ -300,20 +355,33 @@
         }
         submitCode(code) {
             if (!code || !code.trim()) return alert("Code trống!");
+            
+            // Validate code length
+            const MAX_CODE_LENGTH = 100000; // 100KB
+            if (code.length > MAX_CODE_LENGTH) {
+                alert("Code quá dài! Vui lòng kiểm tra lại.");
+                return;
+            }
+            
             const fileInput = document.querySelector("input[type='file']");
             const submitBtn = document.querySelector(".submit__pad__btn");
             if (!fileInput || !submitBtn) return alert("Không tìm thấy form nộp bài gốc!");
-            const file = new File([code], "pch.cpp", { type: "text/plain" });
-            const dt = new DataTransfer();
-            dt.items.add(file);
-            fileInput.files = dt.files;
-            fileInput.dispatchEvent(new Event("change", { bubbles: true }));
-            const oldText = submitBtn.innerText;
-            submitBtn.innerText = "Đang nộp...";
-            setTimeout(() => {
-                submitBtn.click();
-                submitBtn.innerText = oldText;
-            }, 500);
+            
+            try {
+                const file = new File([code], "pch.cpp", { type: "text/plain" });
+                const dt = new DataTransfer();
+                dt.items.add(file);
+                fileInput.files = dt.files;
+                fileInput.dispatchEvent(new Event("change", { bubbles: true }));
+                const oldText = submitBtn.innerText;
+                submitBtn.innerText = "Đang nộp...";
+                setTimeout(() => {
+                    submitBtn.click();
+                    submitBtn.innerText = oldText;
+                }, 500);
+            } catch (error) {
+                alert("Lỗi khi nộp bài! Vui lòng thử lại.");
+            }
         }
     }
 })();
