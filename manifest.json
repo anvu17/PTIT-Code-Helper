@@ -1,0 +1,54 @@
+{
+    "manifest_version": 3,
+    "name": "PTIT Code Helper",
+    "version": "1.1.2",
+    "description": "Tiện ích hỗ trợ PTIT Code: Code Editor, Nộp bài nhanh, Sao chép và tải bài tập, Nhập vào CPH,...",
+    "author": "An Vũ",
+    "icons": {
+        "16": "icons/icon.png",
+        "48": "icons/icon.png",
+        "128": "icons/icon.png"
+    },
+    "permissions": [
+        "storage",
+        "clipboardRead"
+    ],
+    "host_permissions": [
+        "*://code.ptit.edu.vn/*",
+        "http://127.0.0.1:27121/*",
+        "https://anvu.web.app/*"
+    ],
+    "background": {
+        "service_worker": "core/background.js"
+    },
+    "action": {
+        "default_popup": "popup/popup.html"
+    },
+    "options_page": "draft/options.html",
+    "content_scripts": [
+        {
+            "matches": [
+                "*://code.ptit.edu.vn/*"
+            ],
+            "js": [
+                "core/pch.js",
+                "core/analytics.js",
+                "core/content.js"
+            ],
+            "css": [
+                "core/styles.css"
+            ],
+            "run_at": "document_end"
+        },
+        {
+            "matches": [
+                "*://code.ptit.edu.vn/*"
+            ],
+            "js": [
+                "core/injected.js"
+            ],
+            "world": "MAIN",
+            "run_at": "document_end"
+        }
+    ]
+}

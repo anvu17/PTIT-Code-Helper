@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>PTIT Code Helper</title>
+    <link rel="stylesheet" href="../core/styles.css">
+    <style>
+        .pch-page-body {
+            width: 400px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #f8f9fa;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+
+        .pch-header {
+            background: #b71c1c;
+            color: white;
+            padding: 12px 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .pch-header h1 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .pch-content {
+            padding: 12px;
+        }
+
+        .pch-card {
+            background: white;
+            border-radius: 8px;
+            padding: 10px 12px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .pch-section-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: #888;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .pch-link {
+            color: #b71c1c;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .pch-link:hover {
+            text-decoration: underline;
+            opacity: 0.8;
+        }
+
+        .pch-banner {
+            background: linear-gradient(135deg, #b71c1c 0%, #d32f2f 100%);
+            color: white;
+            padding: 12px;
+            margin-bottom: 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            display: none;
+            box-shadow: 0 4px 6px rgba(183, 28, 28, 0.2);
+        }
+
+        .pch-banner.show {
+            display: block;
+        }
+
+        .pch-banner-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .pch-banner-title {
+            font-weight: 700;
+            font-size: 13px;
+            margin-bottom: 4px;
+        }
+
+        .pch-banner-date {
+            font-size: 11px;
+            opacity: 0.9;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 3px 8px;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .pch-banner-close {
+            cursor: pointer;
+            font-size: 20px;
+            line-height: 1;
+            color: rgba(255, 255, 255, 0.8);
+            transition: color 0.2s;
+            font-weight: 300;
+        }
+
+        .pch-banner-close:hover {
+            color: white;
+        }
+
+        .pch-banner-content {
+            margin-bottom: 8px;
+            line-height: 1.4;
+            opacity: 0.95;
+            font-size: 13px;
+        }
+
+        .pch-banner-link {
+            display: inline-block;
+            background: white;
+            color: #b71c1c !important;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 12px;
+            padding: 6px 14px;
+            border-radius: 4px;
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+
+        .pch-banner-link:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .separator {
+            margin: 0 2px;
+            opacity: 0.5;
+        }
+
+        .pch-gap-8 {
+            gap: 8px;
+        }
+
+        .pch-mt-6 {
+            margin-top: 6px;
+        }
+
+        .pch-mt-8 {
+            margin-bottom: 8px;
+        }
+
+        .pch-version {
+            font-size: 10px;
+            opacity: 0.8;
+            font-weight: normal;
+        }
+
+        .pch-sublabel {
+            font-size: 11px;
+            display: block;
+            margin-bottom: 4px;
+            color: #666;
+        }
+
+        .pch-flex-1 {
+            flex: 1;
+        }
+    </style>
+</head>
+
+<body class="pch-page-body pch-box-sizing">
+    <div class="pch-header">
+        <h1>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="16 18 22 12 16 6"></polyline>
+                <polyline points="8 6 2 12 8 18"></polyline>
+            </svg>
+            PTIT Code Helper
+        </h1>
+        <span id="pch_version" class="pch-version"></span>
+    </div>
+    <div class="pch-content">
+        <div class="pch-banner" id="update_banner">
+            <div class="pch-banner-header">
+                <span class="pch-banner-title">PTIT Code Helper <span id="update_version"></span></span>
+                <span class="pch-banner-close" id="update_close">×</span>
+            </div>
+            <div class="pch-mt-8">
+                <span class="pch-banner-date">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                    <span id="update_date"></span>
+                </span>
+            </div>
+            <div id="update_changelog" class="pch-banner-content"></div>
+            <a href="#" id="update_link" target="_blank" class="pch-banner-link">Tải xuống</a>
+        </div>
+        <div class="pch-card">
+            <div class="pch-section-title">Công
+                cụ và Giao diện</div>
+            <div class="pch-row">
+                <label>Code Editor</label>
+                <label class="pch-switch"><input type="checkbox" id="pch_editor_enabled"><span
+                        class="pch-slider"></span></label>
+            </div>
+
+            <div class="pch-row">
+                <label>Ẩn Chat</label>
+                <label class="pch-switch"><input type="checkbox" id="pch_hide_chat"><span
+                        class="pch-slider"></span></label>
+            </div>
+            <div class="pch-row">
+                <label>Ẩn Bài giảng</label>
+                <label class="pch-switch"><input type="checkbox" id="pch_hide_lectures"><span
+                        class="pch-slider"></span></label>
+            </div>
+            <div class="pch-row">
+                <label>Ẩn Beta Banner</label>
+                <label class="pch-switch"><input type="checkbox" id="pch_hide_banner"><span
+                        class="pch-slider"></span></label>
+            </div>
+            <div class="pch-row">
+                <label>Ẩn Contest Banner</label>
+                <label class="pch-switch"><input type="checkbox" id="pch_hide_contest_banner"><span
+                        class="pch-slider"></span></label>
+            </div>
+            <div class="pch-row">
+                <a href="../draft/options.html" target="_blank" class="pch-link">Quản lý chức năng bản nháp
+                    &rsaquo;</a>
+            </div>
+        </div>
+
+        <div class="pch-card">
+            <div class="pch-section-title">Bộ
+                lọc</div>
+            <div class="pch-row">
+                <label>Ẩn bài làm đúng</label>
+                <label class="pch-switch"><input type="checkbox" id="pch_hide_ac"><span
+                        class="pch-slider"></span></label>
+            </div>
+            <div class="pch-row">
+                <label>Chỉ hiện bài làm sai</label>
+                <label class="pch-switch"><input type="checkbox" id="pch_only_wrong"><span
+                        class="pch-slider"></span></label>
+            </div>
+        </div>
+
+        <div class="pch-card">
+            <div class="pch-section-title">Cấu
+                hình tên tệp cho CPH</div>
+            <div class="pch-row pch-gap-8">
+                <div class="pch-flex-1">
+                    <label class="pch-sublabel">Mã bài</label>
+                    <select id="pch_cph_id_format" class="pch-select">
+                        <option value="NONE">Không</option>
+                        <option value="UPPER">CHELLO</option>
+                        <option value="LOWER">chello</option>
+                    </select>
+                </div>
+                <div style="flex:1;">
+                    <label class="pch-sublabel">Tên bài</label>
+                    <select id="pch_cph_name_format" class="pch-select">
+                        <option value="NONE">Không</option>
+                        <option value="UPPER">IN HOA</option>
+                        <option value="LOWER">in thường</option>
+                        <option value="CAMEL">camelCase</option>
+                        <option value="PASCAL">PascalCase</option>
+                        <option value="SNAKE">snake_case</option>
+
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="pch-footer">
+            Phát triển bởi<a href="https://anvu.web.app" target="_blank"><b>An Vũ</b></a>
+            <div class="pch-mt-6">
+                <a href="https://anvu.web.app/pch" target="_blank">Trang chủ</a>
+                <span class="separator">•</span>
+                <a href="https://github.com/anvu17/PTIT-Code-Helper" target="_blank">GitHub</a>
+                <span class="separator">•</span>
+                <a href="#" id="pch_feedback" target="_blank">Góp ý, báo lỗi</a>
+                <span class="separator">•</span>
+                <a href="https://anvu.web.app/mi-cay" target="_blank">Ủng hộ</a>
+            </div>
+        </div>
+    </div>
+    <script src="../core/pch.js"></script>
+    <script src="../core/analytics.js"></script>
+    <script src="popup.js"></script>
+</body>
+
+</html>
